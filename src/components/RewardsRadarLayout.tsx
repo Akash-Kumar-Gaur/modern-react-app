@@ -9,10 +9,8 @@ type RewardsRadarLayoutProps = {
 export function RewardsRadarLayout({ children }: RewardsRadarLayoutProps) {
   const loaderRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
-  const [showLoader, setShowLoader] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return !sessionStorage.getItem(STORAGE_KEYS.loaded);
-  });
+  // Always true on first render so SSR HTML matches client hydration.
+  const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
     const onMouse = (e: MouseEvent) => {
@@ -26,7 +24,12 @@ export function RewardsRadarLayout({ children }: RewardsRadarLayoutProps) {
   }, []);
 
   useEffect(() => {
-    if (!showLoader || !loaderRef.current) return;
+    if (sessionStorage.getItem(STORAGE_KEYS.loaded)) {
+      setShowLoader(false);
+      return;
+    }
+
+    if (!loaderRef.current) return;
 
     const ctx = gsap.context(() => {
       gsap.to("#loader", {
@@ -41,7 +44,7 @@ export function RewardsRadarLayout({ children }: RewardsRadarLayoutProps) {
     });
 
     return () => ctx.revert();
-  }, [showLoader]);
+  }, []);
 
   return (
     <>

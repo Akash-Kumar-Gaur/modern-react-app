@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { BenefitDetail } from "../components/BenefitDetail";
 import { SiteFooter } from "../components/SiteFooter";
+import { DATA_DISCLAIMER } from "../data/products";
 import {
   buildDashboardBenefits,
   estimateProductValue,
@@ -115,8 +116,11 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    const onScroll = () => setTopbarScrolled(window.scrollY > 8);
-    window.addEventListener("scroll", onScroll);
+    const onScroll = () => {
+      setTopbarScrolled(window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -287,6 +291,7 @@ function Dashboard() {
         onMarkUsed={() => detailBenefit && markUsed(detailBenefit)}
         onUndo={() => detailBenefit && undoUsed(detailBenefit)}
       />
+      <p className="data-disclaimer-note">{DATA_DISCLAIMER}</p>
       <SiteFooter />
     </div>
   );
@@ -378,6 +383,9 @@ function BenefitCard({
         </button>
         <p className="dash-benefit-source">{benefit.productName}</p>
         <p className="dash-benefit-desc">{benefit.description}</p>
+        {benefit.verified === false && (
+          <span className="benefit-unverified-tag">⚠ Terms vary — verify with issuer</span>
+        )}
         <button
           type="button"
           className={"dash-claim-toggle" + (claimOpen ? " open" : "")}

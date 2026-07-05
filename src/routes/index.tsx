@@ -1,55 +1,32 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import * as THREE from "three";
 import { getCtaDestination } from "../lib/benefit-data";
+import { scrollToTarget } from "../lib/scroll";
+import {
+  benefitToDisplay,
+  getProductsForDemoTab,
+  getProductMeta,
+  type DemoTab,
+  type Product,
+} from "../data/products";
 import { SiteFooter } from "../components/SiteFooter";
+import { ProductSearchPicker } from "../components/ProductSearchPicker";
+import { SmartRewardSuggester } from "../components/SmartRewardSuggester";
+
+const NAV_LINKS = [
+  { href: "#vault", label: "What's hidden" },
+  { href: "#demo", label: "Try it" },
+  { href: "#calc", label: "Calculator" },
+  { href: "#faq", label: "FAQ" },
+  { href: "/rewards-suggester", label: "Reward suggester", route: true },
+] as const;
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
-
-/* ============ data ============ */
-type Benefit = { cat: string; title: string; sub: string; val: string; color: string };
-type Product = { id: string; name: string; meta: string; value: number; benefits: Benefit[] };
-
-const demoData: Record<"cards" | "telecom" | "insurance", Product[]> = {
-  cards: [
-    { id: "regalia", name: "HDFC Regalia", meta: "HDFC Bank · 3 benefits", value: 6400, benefits: [
-      { cat: "✈ LOUNGE", title: "8 Domestic Lounge Visits", sub: "resets yearly", val: "8/8", color: "#2F7A6D" },
-      { cat: "🛡 COVER", title: "₹1 Cr Air Accident Cover", sub: "always active", val: "✓", color: "#2F7A6D" },
-      { cat: "🛡 COVER", title: "₹15L Overseas Hospitalization", sub: "travel benefit", val: "✓", color: "#2F7A6D" },
-    ]},
-    { id: "elite", name: "SBI Card ELITE", meta: "SBI Card · 2 benefits", value: 5200, benefits: [
-      { cat: "✈ LOUNGE", title: "Unlimited Domestic Lounge", sub: "resets quarterly", val: "∞", color: "#2F7A6D" },
-      { cat: "🎟 BOGO", title: "2 Free Movie Tickets / month", sub: "BookMyShow", val: "2/2", color: "#C89B3C" },
-    ]},
-    { id: "amazonpay", name: "Amazon Pay ICICI", meta: "ICICI Bank · 1 benefit", value: 3600, benefits: [
-      { cat: "💰 CASHBACK", title: "5% Back on Amazon", sub: "Prime members, uncapped", val: "5%", color: "#C89B3C" },
-    ]},
-  ],
-  telecom: [
-    { id: "jio999", name: "Jio ₹999 / 84 days", meta: "Jio · 2 benefits", value: 1400, benefits: [
-      { cat: "🎬 OTT", title: "Free JioHotstar", sub: "activate in MyJio", val: "✓", color: "#E2593A" },
-      { cat: "☁ CLOUD", title: "50GB JioCloud", sub: "auto-linked", val: "✓", color: "#E2593A" },
-    ]},
-    { id: "airtel999", name: "Airtel ₹999 / 84 days", meta: "Airtel · 2 benefits", value: 1300, benefits: [
-      { cat: "🎬 OTT", title: "Apollo Circle + OTT trials", sub: "redeem in Airtel Thanks", val: "✓", color: "#E2593A" },
-      { cat: "🎵 MUSIC", title: "Wynk Music Premium", sub: "auto-linked", val: "✓", color: "#E2593A" },
-    ]},
-  ],
-  insurance: [
-    { id: "health", name: "Comprehensive Health Policy", meta: "Most insurers · 2 benefits", value: 4500, benefits: [
-      { cat: "🩺 HEALTH", title: "Free Annual Checkup", sub: "per insured adult", val: "1/1", color: "#C89B3C" },
-      { cat: "📞 CONSULT", title: "4 Free Teleconsults / yr", sub: "via insurer app", val: "4/4", color: "#C89B3C" },
-    ]},
-    { id: "motor", name: "Comprehensive Motor Policy", meta: "Most insurers · 1 benefit", value: 1500, benefits: [
-      { cat: "🚗 ASSIST", title: "Free Roadside Assistance", sub: "note the helpline number", val: "✓", color: "#2F7A6D" },
-    ]},
-  ],
-};
 
 const marqueeItems: [string, string, string][] = [
   ["✈️", "8 lounge visits/yr", "HDFC Regalia"],
@@ -78,13 +55,14 @@ const faqs = [
 
 function Index() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"cards" | "telecom" | "insurance">("cards");
+  const [tab, setTab] = useState<DemoTab>("cards");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [flipped, setFlipped] = useState<Set<number>>(new Set());
   const [cards, setCards] = useState(2);
   const [sims, setSims] = useState(3);
   const [policies, setPolicies] = useState(2);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const heroCanvasRef = useRef<HTMLCanvasElement>(null);
   const ctaCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -92,20 +70,67 @@ function Index() {
   const marqueeRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const goToApp = () => navigate({ to: getCtaDestination() });
 
+  const closeMobileMenu = () => {
+    const menu = mobileMenuRef.current;
+    if (!menu) {
+      setMenuOpen(false);
+      return;
+    }
+    gsap.to(menu, {
+      y: "-100%",
+      duration: 0.32,
+      ease: "power3.in",
+      onComplete: () => setMenuOpen(false),
+    });
+  };
+
+  const handleNavAnchor = (hash: string) => {
+    closeMobileMenu();
+    scrollToTarget(hash, -88);
+    window.history.pushState(null, "", hash);
+  };
+
+  useEffect(() => {
+    if (!menuOpen || !mobileMenuRef.current) return;
+
+    const ctx = gsap.context(() => {
+      gsap.set(mobileMenuRef.current, { y: "-100%" });
+      gsap.set(".mobile-menu-link", { opacity: 0, y: 20 });
+      gsap.to(mobileMenuRef.current, { y: "0%", duration: 0.4, ease: "power3.out" });
+      gsap.to(".mobile-menu-link", {
+        opacity: 1,
+        y: 0,
+        duration: 0.45,
+        stagger: 0.07,
+        delay: 0.12,
+        ease: "power3.out",
+      });
+    });
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      ctx.revert();
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
   /* ============ animations & scene bootstrap ============ */
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+    gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
       // hero intro
       gsap.set(".reveal-hero", { opacity: 0, y: 18 });
+      gsap.set(".hero-tagline", { opacity: 0, y: 24 });
       const tl = gsap.timeline({ delay: 0.6 });
-      tl.to("h1.hero-title .line span", { y: 0, duration: 1.0, stagger: 0.14, ease: "power4.out" })
-        .to(".reveal-hero", { opacity: 1, y: 0, duration: 0.6 }, "-=0.7")
-        .to(".hero-sub", { opacity: 1, duration: 0.7 }, "-=0.5")
+      tl.to(".reveal-hero", { opacity: 1, y: 0, duration: 0.6 })
+        .to(".hero-tagline", { opacity: 1, y: 0, duration: 0.9 }, "-=0.3")
+        .to(".hero-sub", { opacity: 1, duration: 0.7 }, "-=0.4")
         .to(".hero-actions", { opacity: 1, duration: 0.7 }, "-=0.45")
         .to(".hero-note", { opacity: 1, duration: 0.7 }, "-=0.5");
 
@@ -176,11 +201,7 @@ function Index() {
       if (!hash || hash === "#") return;
       const target = document.querySelector(hash);
       if (!target) return;
-      gsap.to(window, {
-        scrollTo: { y: target, offsetY: 88, autoKill: true },
-        duration: 1.15,
-        ease: "power2.inOut",
-      });
+      scrollToTarget(target, -88);
     };
 
     const onAnchorClick = (e: MouseEvent) => {
@@ -202,6 +223,7 @@ function Index() {
     const onScroll = () => {
       if (navRef.current) navRef.current.classList.toggle("scrolled", window.scrollY > 40);
     };
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
 
     const onLoad = () => ScrollTrigger.refresh();
@@ -229,11 +251,72 @@ function Index() {
     };
   }, []);
 
+  /* ============ hero slot machine ============ */
+  useEffect(() => {
+    const track = document.getElementById("heroSlotTrack");
+    if (!track) return;
+
+    const items = Array.from(track.querySelectorAll(".hero-slot-item")) as HTMLElement[];
+    let current = 0;
+    let interval: ReturnType<typeof setInterval> | undefined;
+
+    function flipTo(next: number) {
+      const outgoing = items[current];
+      const incoming = items[next];
+
+      gsap.to(outgoing, {
+        rotateX: -88,
+        y: "-60%",
+        opacity: 0,
+        duration: 0.38,
+        ease: "power2.in",
+        onComplete: () => {
+          gsap.set(outgoing, { rotateX: 88, y: "60%", opacity: 0 });
+        },
+      });
+
+      gsap.fromTo(
+        incoming,
+        { rotateX: 88, y: "60%", opacity: 0 },
+        { rotateX: 0, y: "0%", opacity: 1, duration: 0.42, ease: "power2.out", delay: 0.22 },
+      );
+
+      current = next;
+    }
+
+    items.forEach((item, i) => {
+      if (i === 0) {
+        gsap.set(item, { rotateX: 0, y: "0%", opacity: 1 });
+      } else {
+        gsap.set(item, { rotateX: 88, y: "60%", opacity: 0 });
+      }
+    });
+
+    const startTimeout = setTimeout(() => {
+      interval = setInterval(() => {
+        const next = (current + 1) % items.length;
+        flipTo(next);
+      }, 2200);
+    }, 1400);
+
+    return () => {
+      clearTimeout(startTimeout);
+      if (interval !== undefined) clearInterval(interval);
+    };
+  }, []);
+
   /* ============ derived: demo ============ */
-  const allProducts: Product[] = [...demoData.cards, ...demoData.telecom, ...demoData.insurance];
+  const tabProducts = getProductsForDemoTab(tab);
+  const allProducts: Product[] = [
+    ...getProductsForDemoTab("cards"),
+    ...getProductsForDemoTab("telecom"),
+    ...getProductsForDemoTab("insurance"),
+  ];
   const chosen = allProducts.filter((p) => selected.has(p.id));
-  const benefits = chosen.flatMap((p) => p.benefits.map((b) => ({ ...b, src: p.name })));
-  const totalValue = chosen.reduce((s, p) => s + p.value, 0);
+  const benefits = chosen.flatMap((p) =>
+    p.benefits.map((b) => ({ ...benefitToDisplay(b), src: p.name })),
+  );
+  const totalValue = chosen.reduce((s, p) => s + p.annualValueEstimate, 0);
 
   const CARD_VAL = 3500, SIM_VAL = 800, POLICY_VAL = 1250;
   const cVal = cards * CARD_VAL, sVal = sims * SIM_VAL, pVal = policies * POLICY_VAL;
@@ -248,14 +331,73 @@ function Index() {
         <div className="nav-inner">
           <div className="logo"><span className="logo-mark">◈</span> Rewards Radar</div>
           <div className="nav-links">
-            <a className="nav-link" href="#vault">What's hidden</a>
-            <a className="nav-link" href="#demo">Try it</a>
-            <a className="nav-link" href="#calc">Calculator</a>
-            <a className="nav-link" href="#faq">FAQ</a>
+            {NAV_LINKS.map((link) =>
+              "route" in link && link.route ? (
+                <Link key={link.href} to={link.href} className="nav-link">
+                  {link.label}
+                </Link>
+              ) : (
+                <a key={link.href} className="nav-link" href={link.href}>
+                  {link.label}
+                </a>
+              ),
+            )}
           </div>
-          <button className="nav-cta" onClick={goToApp}>Get started free</button>
+          <div className="nav-actions">
+            <button className="nav-cta" onClick={goToApp}>Get started free</button>
+            <button
+              type="button"
+              className="hamburger"
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen(true)}
+            >
+              <span /><span /><span />
+            </button>
+          </div>
         </div>
       </nav>
+
+      <div
+        className={"mobile-menu" + (menuOpen ? " open" : "")}
+        ref={mobileMenuRef}
+        aria-hidden={!menuOpen}
+      >
+        <button
+          type="button"
+          className="mobile-menu-close"
+          aria-label="Close menu"
+          onClick={closeMobileMenu}
+        >
+          ×
+        </button>
+        <nav className="mobile-menu-links">
+          {NAV_LINKS.map((link) =>
+            "route" in link && link.route ? (
+              <Link
+                key={link.href}
+                to={link.href}
+                className="mobile-menu-link serif"
+                onClick={closeMobileMenu}
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.href}
+                className="mobile-menu-link serif"
+                href={link.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavAnchor(link.href);
+                }}
+              >
+                {link.label}
+              </a>
+            ),
+          )}
+        </nav>
+      </div>
 
       {/* HERO */}
       <section className="hero" ref={heroRef}>
@@ -263,11 +405,26 @@ function Index() {
         <div className="hero-grain" />
         <div className="hero-content" ref={heroContentRef}>
           <span className="eyebrow reveal-hero"><span className="eyebrow-dot" /> Most people leave 2–3 paid benefits unclaimed every year</span>
-          <h1 className="hero-title serif">
-            <span className="line"><span>You already paid</span></span>
-            <span className="line"><span>for this. <em>Come claim it.</em></span></span>
-          </h1>
-          <p className="hero-sub">Your cards, recharge plans, and insurance policies bundle in lounge access, free checkups, OTT subscriptions, and cashback — buried in fine print nobody reads. We read it. Then we track every benefit until you've used it.</p>
+          <div className="hero-tagline">
+            <div className="hero-tagline-static serif">Your card is hiding</div>
+            <div className="hero-slot-track-wrap" aria-live="polite">
+              <div className="hero-slot-track" id="heroSlotTrack">
+                <div className="hero-slot-item">free lounge access</div>
+                <div className="hero-slot-item">₹1 crore insurance</div>
+                <div className="hero-slot-item">a free health checkup</div>
+                <div className="hero-slot-item">5% cashback</div>
+                <div className="hero-slot-item">4 golf games a quarter</div>
+                <div className="hero-slot-item">a bundled OTT plan</div>
+                <div className="hero-slot-item">roadside assistance</div>
+                <div className="hero-slot-item">₹15L travel cover</div>
+                <div className="hero-slot-item">free movie tickets</div>
+                <div className="hero-slot-item">airport lounge access</div>
+              </div>
+              <div className="hero-slot-underline" />
+            </div>
+            <div className="hero-tagline-static serif">from you. Until now.</div>
+          </div>
+          <p className="hero-sub">Every card, plan, and policy you hold bundles in perks — lounge access, free checkups, cashback, insurance cover — buried where nobody looks. We find them. You claim them.</p>
           <div className="hero-actions">
             <button className="btn-primary" data-magnetic onClick={goToApp}>Find my unused benefits → <span className="btn-shine" /></button>
             <button className="btn-ghost">▶ &nbsp;See how it works</button>
@@ -359,25 +516,23 @@ function Index() {
                   <div key={key} className={"demo-tab" + (tab === key ? " active" : "")} onClick={() => setTab(key)}>{label}</div>
                 ))}
               </div>
-              <div className="demo-list">
-                {demoData[tab].map((p) => (
-                  <div
-                    key={p.id}
-                    className={"demo-row" + (selected.has(p.id) ? " checked" : "")}
-                    onClick={() => setSelected((prev) => {
-                      const n = new Set(prev);
-                      if (n.has(p.id)) n.delete(p.id); else n.add(p.id);
-                      return n;
-                    })}
-                  >
-                    <div>
-                      <div className="demo-row-name">{p.name}</div>
-                      <div className="demo-row-meta">{p.meta}</div>
-                    </div>
-                    <div className="demo-stamp">✓</div>
-                  </div>
-                ))}
-              </div>
+              <ProductSearchPicker
+                variant="demo"
+                items={tabProducts.map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  meta: getProductMeta(p),
+                }))}
+                selected={selected}
+                onToggle={(id) =>
+                  setSelected((prev) => {
+                    const n = new Set(prev);
+                    if (n.has(id)) n.delete(id);
+                    else n.add(id);
+                    return n;
+                  })
+                }
+              />
             </div>
             <div className="demo-pane reveal">
               <div className="demo-result-head">
@@ -503,6 +658,23 @@ function Index() {
             );
           })}
         </div>
+      </section>
+
+      {/* SMART REWARD SUGGESTER */}
+      <section className="suggester-section section" id="suggester">
+        <div className="section-head center">
+          <span className="section-eyebrow" style={{ justifyContent: "center" }}>
+            Smart Reward Suggester
+          </span>
+          <h2 className="section-title reveal">
+            What gives you the best reward for this purchase?
+          </h2>
+          <p className="section-sub reveal">
+            Tell us what you&apos;re buying and how — we&apos;ll tell you which card, UPI app, or
+            payment method gives you the most back.
+          </p>
+        </div>
+        <SmartRewardSuggester />
       </section>
 
       {/* FINAL CTA */}

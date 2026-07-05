@@ -30,3 +30,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Scraper page cache — raw scraped HTML text, never commit
+scripts/.cache/

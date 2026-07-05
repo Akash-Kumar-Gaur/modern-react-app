@@ -8,6 +8,7 @@ import {
   getSelectedProductIds,
 } from "../lib/benefit-data";
 import { SiteFooter } from "../components/SiteFooter";
+import { ProductSearchPicker } from "../components/ProductSearchPicker";
 
 export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
@@ -19,7 +20,6 @@ function Onboarding() {
   const [selected, setSelected] = useState<Set<string>>(() => new Set(getSelectedProductIds()));
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLButtonElement>(null);
 
   const allProducts = [...demoData.cards, ...demoData.telecom, ...demoData.insurance];
@@ -117,23 +117,16 @@ function Onboarding() {
               ))}
             </div>
 
-            <div className="onboard-list" ref={listRef} key={tab}>
-              {demoData[tab].map((p, i) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className={"onboard-row" + (selected.has(p.id) ? " checked" : "")}
-                  style={{ animationDelay: `${0.08 + i * 0.06}s` }}
-                  onClick={() => toggleProduct(p.id)}
-                >
-                  <div>
-                    <div className="onboard-row-name">{p.name}</div>
-                    <div className="onboard-row-meta">{p.meta}</div>
-                  </div>
-                  <div className="onboard-stamp">✓</div>
-                </button>
-              ))}
-            </div>
+            <ProductSearchPicker
+              variant="onboard"
+              items={demoData[tab].map((p) => ({
+                id: p.id,
+                name: p.name,
+                meta: p.meta,
+              }))}
+              selected={selected}
+              onToggle={toggleProduct}
+            />
 
             <div className="onboard-footer">
             <button
@@ -194,6 +187,9 @@ function Onboarding() {
                       <div className="mini-sub">
                         {b.src} · {b.sub}
                       </div>
+                      {b.verified === false && (
+                        <span className="benefit-unverified-tag">⚠ Terms vary — verify with issuer</span>
+                      )}
                     </div>
                     <div className="mini-stub">
                       <div className="mini-val">{b.val}</div>

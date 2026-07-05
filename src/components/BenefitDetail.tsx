@@ -75,6 +75,16 @@ export function BenefitDetail({
           <section className="benefit-sheet-section">
             <h3 className="benefit-sheet-section-title">What&apos;s included</h3>
             <p className="benefit-sheet-text">{benefit.description}</p>
+            {benefit.verified === false && (
+              <div className="benefit-verify-notice">
+                <span>⚠️</span>
+                <span>
+                  This benefit&apos;s terms change frequently or vary by account type. Always verify
+                  current terms on the issuer&apos;s official website before relying on this
+                  information.
+                </span>
+              </div>
+            )}
           </section>
 
           <section className="benefit-sheet-section">

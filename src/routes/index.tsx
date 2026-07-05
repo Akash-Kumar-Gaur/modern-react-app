@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import * as THREE from "three";
 import { getCtaDestination } from "../lib/benefit-data";
 import { SiteFooter } from "../components/SiteFooter";
@@ -96,7 +97,7 @@ function Index() {
 
   /* ============ animations & scene bootstrap ============ */
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
     const ctx = gsap.context(() => {
       // hero intro
@@ -131,19 +132,37 @@ function Index() {
         btn.addEventListener("mouseleave", onLeave);
       });
 
-      // reveals
+      // scroll-linked reveals (scrubbed for smooth feel vs abrupt pop-in)
       gsap.utils.toArray<HTMLElement>(".reveal").forEach((el) => {
-        gsap.to(el, {
-          opacity: 1, y: 0, duration: 0.85, ease: "power3.out",
-          scrollTrigger: { trigger: el, start: "top 86%" },
-        });
+        gsap.fromTo(
+          el,
+          { opacity: 0, y: 36 },
+          {
+            opacity: 1,
+            y: 0,
+            ease: "none",
+            scrollTrigger: {
+              trigger: el,
+              start: "top 94%",
+              end: "top 62%",
+              scrub: 0.85,
+            },
+          },
+        );
       });
 
-      // hero parallax
-      if (heroContentRef.current) {
+      // hero parallax — scrub lag smooths scroll-linked motion
+      if (heroContentRef.current && heroRef.current) {
         gsap.to(heroContentRef.current, {
-          y: 90, opacity: 0.25, ease: "none",
-          scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: true },
+          y: 72,
+          opacity: 0.2,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.15,
+          },
         });
       }
 
@@ -153,11 +172,44 @@ function Index() {
       }
     });
 
-    // nav scroll
+    const scrollToHash = (hash: string) => {
+      if (!hash || hash === "#") return;
+      const target = document.querySelector(hash);
+      if (!target) return;
+      gsap.to(window, {
+        scrollTo: { y: target, offsetY: 88, autoKill: true },
+        duration: 1.15,
+        ease: "power2.inOut",
+      });
+    };
+
+    const onAnchorClick = (e: MouseEvent) => {
+      const link = (e.target as HTMLElement).closest<HTMLAnchorElement>("a[href*='#']");
+      if (!link) return;
+      const url = new URL(link.href, window.location.origin);
+      if (url.pathname !== window.location.pathname) return;
+      const hash = url.hash;
+      if (!hash) return;
+      const target = document.querySelector(hash);
+      if (!target) return;
+      e.preventDefault();
+      scrollToHash(hash);
+      window.history.pushState(null, "", hash);
+    };
+
+    document.addEventListener("click", onAnchorClick);
+
     const onScroll = () => {
       if (navRef.current) navRef.current.classList.toggle("scrolled", window.scrollY > 40);
     };
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    const onLoad = () => ScrollTrigger.refresh();
+    window.addEventListener("load", onLoad);
+
+    if (window.location.hash) {
+      requestAnimationFrame(() => scrollToHash(window.location.hash));
+    }
 
     // three.js hero scene
     const disposers: Array<() => void> = [];
@@ -170,7 +222,9 @@ function Index() {
 
     return () => {
       ctx.revert();
+      document.removeEventListener("click", onAnchorClick);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("load", onLoad);
       disposers.forEach((d) => d());
     };
   }, []);

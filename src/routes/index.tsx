@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import * as THREE from "three";
+import { getCtaDestination } from "../lib/benefit-data";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -74,6 +75,7 @@ const faqs = [
 ];
 
 function Index() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<"cards" | "telecom" | "insurance">("cards");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -86,22 +88,16 @@ function Index() {
   const ctaCanvasRef = useRef<HTMLCanvasElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const marqueeRef = useRef<HTMLDivElement>(null);
-  const loaderRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
+
+  const goToApp = () => navigate({ to: getCtaDestination() });
 
   /* ============ animations & scene bootstrap ============ */
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      // preloader out
-      gsap.to("#loader", {
-        opacity: 0, duration: 0.55, delay: 0.4,
-        onComplete: () => { if (loaderRef.current) loaderRef.current.style.display = "none"; },
-      });
-
       // hero intro
       gsap.set(".reveal-hero", { opacity: 0, y: 18 });
       const tl = gsap.timeline({ delay: 0.6 });
@@ -162,15 +158,6 @@ function Index() {
     };
     window.addEventListener("scroll", onScroll);
 
-    // cursor glow
-    const onMouse = (e: MouseEvent) => {
-      if (!glowRef.current) return;
-      glowRef.current.style.opacity = "1";
-      glowRef.current.style.left = e.clientX + "px";
-      glowRef.current.style.top = e.clientY + "px";
-    };
-    window.addEventListener("mousemove", onMouse);
-
     // three.js hero scene
     const disposers: Array<() => void> = [];
     if (heroCanvasRef.current && heroRef.current) {
@@ -183,7 +170,6 @@ function Index() {
     return () => {
       ctx.revert();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("mousemove", onMouse);
       disposers.forEach((d) => d());
     };
   }, []);
@@ -203,13 +189,6 @@ function Index() {
 
   return (
     <>
-      <div id="loader" ref={loaderRef}>
-        <div className="loader-ticket"><div className="loader-shine" /></div>
-        <div className="loader-text">Benefit Radar</div>
-      </div>
-
-      <div id="cursor-glow" ref={glowRef} />
-
       <nav className="site-nav" ref={navRef}>
         <div className="nav-inner">
           <div className="logo"><span className="logo-mark">◈</span> Benefit Radar</div>
@@ -219,7 +198,7 @@ function Index() {
             <a className="nav-link" href="#calc">Calculator</a>
             <a className="nav-link" href="#faq">FAQ</a>
           </div>
-          <button className="nav-cta">Get started free</button>
+          <button className="nav-cta" onClick={goToApp}>Get started free</button>
         </div>
       </nav>
 
@@ -235,7 +214,7 @@ function Index() {
           </h1>
           <p className="hero-sub">Your cards, recharge plans, and insurance policies bundle in lounge access, free checkups, OTT subscriptions, and cashback — buried in fine print nobody reads. We read it. Then we track every benefit until you've used it.</p>
           <div className="hero-actions">
-            <button className="btn-primary" data-magnetic>Find my unused benefits → <span className="btn-shine" /></button>
+            <button className="btn-primary" data-magnetic onClick={goToApp}>Find my unused benefits → <span className="btn-shine" /></button>
             <button className="btn-ghost">▶ &nbsp;See how it works</button>
           </div>
           <p className="hero-note">Free · No bank login required · Under a minute</p>
@@ -478,7 +457,7 @@ function Index() {
           <h2 className="final-title reveal">Stop paying for things<br /><em>you never collect.</em></h2>
           <p className="final-sub reveal">Two minutes to see everything you're entitled to.</p>
           <div style={{ marginTop: 36 }} className="reveal">
-            <button className="btn-primary" data-magnetic>Find my unused benefits → <span className="btn-shine" /></button>
+            <button className="btn-primary" data-magnetic onClick={goToApp}>Find my unused benefits → <span className="btn-shine" /></button>
           </div>
         </div>
       </section>
@@ -492,11 +471,11 @@ function Index() {
 function mountHeroScene(canvas: HTMLCanvasElement, host: HTMLElement) {
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0x101319, 9, 20);
-  const camera = new THREE.PerspectiveCamera(45, host.clientWidth / host.clientHeight, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
   camera.position.set(0, 0, 10);
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(host.clientWidth, host.clientHeight);
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
   function ticketTexture(d: { label: string; title: string; value: string; sub: string; accent: string }) {
     const c = document.createElement("canvas"); c.width = 660; c.height = 400;
@@ -544,7 +523,7 @@ function mountHeroScene(canvas: HTMLCanvasElement, host: HTMLElement) {
       new THREE.PlaneGeometry(4.6, 2.75),
       new THREE.MeshBasicMaterial({ map: ticketTexture(d), transparent: true })
     );
-    m.position.set(2.2 + i * 0.1, 1.15 - i * 1.15, -i * 1.5);
+    m.position.set(0.3 + i * 0.12, 1.15 - i * 1.15, -i * 1.5);
     m.rotation.set(-0.07 + i * 0.02, -0.38 + i * 0.06, -0.04 + i * 0.03);
     (m.userData as MeshUD) = { br: { x: m.rotation.x, y: m.rotation.y }, bp: m.position.clone(), off: i * 1.9 };
     scene.add(m); meshes.push(m);
@@ -564,11 +543,12 @@ function mountHeroScene(canvas: HTMLCanvasElement, host: HTMLElement) {
 
   let mx = 0, my = 0, tx = 0, ty = 0;
   const onMove = (e: MouseEvent) => {
-    const r = host.getBoundingClientRect();
+    const r = canvas.getBoundingClientRect();
+    if (r.width === 0) return;
     mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
     my = ((e.clientY - r.top) / r.height - 0.5) * 2;
   };
-  host.addEventListener("mousemove", onMove);
+  canvas.addEventListener("mousemove", onMove);
 
   const clock = new THREE.Clock();
   let raf = 0;
@@ -590,16 +570,17 @@ function mountHeroScene(canvas: HTMLCanvasElement, host: HTMLElement) {
   animate();
 
   const onResize = () => {
-    camera.aspect = host.clientWidth / host.clientHeight;
+    if (canvas.clientWidth === 0) return;
+    camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(host.clientWidth, host.clientHeight);
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
   };
   window.addEventListener("resize", onResize);
 
   return () => {
     cancelAnimationFrame(raf);
     window.removeEventListener("resize", onResize);
-    host.removeEventListener("mousemove", onMove);
+    canvas.removeEventListener("mousemove", onMove);
     renderer.dispose();
   };
 }

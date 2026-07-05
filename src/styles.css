@@ -1499,3 +1499,232 @@ footer.site-footer { text-align: center; padding: 44px 24px 50px; font-size: 12.
   .final-cta { padding: 48px 16px; }
   .final-title { font-size: 22px; }
 }
+
+/* ============================================
+   MOBILE HERO — full polish pass
+   iPhone 375–430px
+   ============================================ */
+@media (max-width: 480px) {
+
+  /* 1. Hide the 3D canvas entirely on mobile — it only adds visual noise
+        behind the text. The particles and ticket cards don't render well
+        at this size and make text unreadable. */
+  #hero-canvas {
+    display: none;
+  }
+
+  /* 2. Hero background: since canvas is gone, add a richer gradient
+        so the hero still has depth and visual interest */
+  .hero {
+    background:
+      radial-gradient(ellipse 120% 60% at 50% -10%, rgba(200,155,60,0.18), transparent 60%),
+      radial-gradient(ellipse 80% 50% at 100% 80%, rgba(47,122,109,0.14), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 0% 60%, rgba(226,89,58,0.08), transparent 50%),
+      var(--ink);
+    border-radius: 0 0 28px 28px;
+    min-height: auto;
+    padding-bottom: 0;
+  }
+
+  /* 3. Hero content: full width, proper padding, vertically compact */
+  .hero-content {
+    max-width: 100%;
+    margin-left: 0;
+    padding: 100px 24px 32px;
+    flex: none;
+  }
+
+  /* 4. Eyebrow: smaller, tighter */
+  .eyebrow {
+    font-size: 11px;
+    padding: 7px 13px;
+    gap: 7px;
+    border-radius: 100px;
+  }
+  .eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+  }
+
+  /* 5. Slot machine headline: large and bold, contained */
+  .hero-tagline {
+    margin-top: 20px;
+    gap: 0;
+  }
+
+  .hero-tagline-static {
+    font-size: 36px;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-slot-track-wrap {
+    height: 48px;
+    margin: 2px 0;
+    background: linear-gradient(90deg,
+      rgba(200,155,60,0.1),
+      rgba(200,155,60,0.06) 60%,
+      transparent
+    );
+    border-radius: 6px;
+    /* Remove the top/bottom fade masks on mobile — they clip the text */
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  /* Override the ::before ::after fades that clip text on mobile */
+  .hero-slot-track-wrap::before,
+  .hero-slot-track-wrap::after {
+    display: none;
+  }
+
+  .hero-slot-item {
+    font-size: 36px;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    padding-left: 4px;
+  }
+
+  /* 6. Sub-headline: readable size, proper line height */
+  .hero-sub {
+    font-size: 15px;
+    line-height: 1.68;
+    color: #A8AEBB;
+    margin-top: 20px;
+    max-width: 100%;
+  }
+
+  /* 7. CTA actions: stack vertically, button full width */
+  .hero-actions {
+    margin-top: 28px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    padding: 16px 24px;
+    font-size: 15px;
+    border-radius: 100px;
+    box-shadow: 0 8px 24px rgba(200,155,60,0.28);
+  }
+
+  .btn-ghost {
+    font-size: 14px;
+    padding-left: 2px;
+  }
+
+  /* 8. Hero note */
+  .hero-note {
+    font-size: 12px;
+    margin-top: 14px;
+    color: var(--soft-ink);
+  }
+
+  /* 9. Hero stats: switch from heavy stacked cards to a clean 
+        horizontal 3-up layout with no borders — just numbers */
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 28px 24px 32px;
+    margin-top: 8px;
+    /* Subtle separator line at top */
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .hero-stat {
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0 12px;
+    /* Vertical separator between stats */
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .hero-stat:first-child {
+    padding-left: 0;
+  }
+
+  .hero-stat:last-child {
+    border-right: none;
+    padding-right: 0;
+  }
+
+  .hero-stat-num {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--brass-glow);
+  }
+
+  .hero-stat-label {
+    font-size: 10px;
+    color: var(--soft-ink);
+    margin-top: 5px;
+    line-height: 1.4;
+  }
+
+  /* 10. Scroll hint: cleaner, centered, more compact */
+  .hero-scroll-hint {
+    padding-bottom: 20px;
+    margin-top: -8px;
+  }
+
+  .scroll-line {
+    height: 24px;
+  }
+
+  .hero-scroll-hint span:first-child {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    opacity: 0.5;
+  }
+}
+
+/* ============================================
+   EXTRA SMALL — iPhone SE, 375px
+   ============================================ */
+@media (max-width: 390px) {
+  .hero-content { padding: 88px 20px 28px; }
+  .hero-tagline-static { font-size: 32px; }
+  .hero-slot-item { font-size: 32px; }
+  .hero-slot-track-wrap { height: 42px; }
+  .hero-sub { font-size: 14px; }
+  .hero-stat-num { font-size: 17px; }
+  .hero-stat-label { font-size: 9.5px; }
+  .hero-stats { padding: 24px 20px 28px; }
+}
+
+/* ============================================
+   MARQUEE — mobile tightening
+   ============================================ */
+@media (max-width: 480px) {
+  .marquee-wrap {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--paper-dim);
+  }
+  .marquee-item {
+    font-size: 12.5px;
+    padding: 9px 14px;
+    border-radius: 100px;
+  }
+  /* Cat strip below hero */
+  .cat-strip {
+    margin: -28px auto 0;
+    padding: 0 16px;
+  }
+  .cat-strip-inner {
+    padding: 16px 18px;
+    gap: 8px;
+    border-radius: 16px;
+  }
+  .cat-chip {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+}

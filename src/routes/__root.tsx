@@ -11,7 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { BenefitRadarLayout } from "../components/BenefitRadarLayout";
+import { RewardsRadarLayout } from "../components/RewardsRadarLayout";
 
 function NotFoundComponent() {
   return (
@@ -78,9 +78,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Benefit Radar — Claim what you already paid for" },
+      { title: "Rewards Radar — Claim what you already paid for" },
       { name: "description", content: "Surface unused benefits bundled into the credit cards, recharge plans, and insurance policies you already hold. No bank login required." },
-      { property: "og:title", content: "Benefit Radar — Claim what you already paid for" },
+      { property: "og:title", content: "Rewards Radar — Claim what you already paid for" },
       { property: "og:description", content: "Surface unused benefits bundled into the cards, plans, and policies you already hold." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -121,9 +121,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BenefitRadarLayout>
+      <RewardsRadarLayout>
         <Outlet />
-      </BenefitRadarLayout>
+      </RewardsRadarLayout>
     </QueryClientProvider>
   );
 }

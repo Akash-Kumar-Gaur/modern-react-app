@@ -4,6 +4,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import * as THREE from "three";
 import { getCtaDestination } from "../lib/benefit-data";
+import { SiteFooter } from "../components/SiteFooter";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -191,7 +192,7 @@ function Index() {
     <>
       <nav className="site-nav" ref={navRef}>
         <div className="nav-inner">
-          <div className="logo"><span className="logo-mark">◈</span> Benefit Radar</div>
+          <div className="logo"><span className="logo-mark">◈</span> Rewards Radar</div>
           <div className="nav-links">
             <a className="nav-link" href="#vault">What's hidden</a>
             <a className="nav-link" href="#demo">Try it</a>
@@ -355,7 +356,7 @@ function Index() {
       </section>
 
       {/* HOW */}
-      <section className="section">
+      <section className="section" id="how">
         <div className="section-head">
           <span className="section-eyebrow">How it works</span>
           <h2 className="section-title reveal">Three steps. No bank login. Ever.</h2>
@@ -462,7 +463,7 @@ function Index() {
         </div>
       </section>
 
-      <footer className="site-footer">Benefit Radar — design concept · not affiliated with any bank, telecom operator, or insurer.</footer>
+      <SiteFooter />
     </>
   );
 }

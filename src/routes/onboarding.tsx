@@ -7,6 +7,7 @@ import {
   setSelectedProductIds,
   getSelectedProductIds,
 } from "../lib/benefit-data";
+import { SiteFooter } from "../components/SiteFooter";
 
 export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
@@ -31,9 +32,20 @@ function Onboarding() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(leftRef.current, { y: 30, opacity: 0, duration: 0.7, ease: "power3.out" });
-      gsap.from(rightRef.current, { y: 24, opacity: 0, duration: 0.7, delay: 0.15, ease: "power3.out" });
-      gsap.from(".onboard-row", { x: -12, opacity: 0, duration: 0.5, stagger: 0.06, delay: 0.25, ease: "power2.out" });
+      if (leftRef.current) {
+        gsap.fromTo(
+          leftRef.current,
+          { y: 30, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7, ease: "power3.out", clearProps: "transform,opacity" },
+        );
+      }
+      if (rightRef.current) {
+        gsap.fromTo(
+          rightRef.current,
+          { y: 24, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7, delay: 0.15, ease: "power3.out", clearProps: "transform,opacity" },
+        );
+      }
     });
 
     const btn = ctaRef.current;
@@ -56,7 +68,7 @@ function Onboarding() {
       btn.removeEventListener("mousemove", onMove);
       btn.removeEventListener("mouseleave", onLeave);
     };
-  }, [tab]);
+  }, []);
 
   const toggleProduct = (id: string) => {
     setSelected((prev) => {
@@ -105,12 +117,13 @@ function Onboarding() {
               ))}
             </div>
 
-            <div className="onboard-list" ref={listRef}>
-              {demoData[tab].map((p) => (
+            <div className="onboard-list" ref={listRef} key={tab}>
+              {demoData[tab].map((p, i) => (
                 <button
                   key={p.id}
                   type="button"
                   className={"onboard-row" + (selected.has(p.id) ? " checked" : "")}
+                  style={{ animationDelay: `${0.08 + i * 0.06}s` }}
                   onClick={() => toggleProduct(p.id)}
                 >
                   <div>
@@ -122,6 +135,7 @@ function Onboarding() {
               ))}
             </div>
 
+            <div className="onboard-footer">
             <button
               ref={ctaRef}
               type="button"
@@ -132,6 +146,7 @@ function Onboarding() {
               Show my benefits → <span className="btn-shine" />
             </button>
             <p className="onboard-footnote">Free · No bank login required</p>
+            </div>
           </div>
 
           <div
@@ -166,7 +181,11 @@ function Onboarding() {
                 </div>
               ) : (
                 benefits.map((b, i) => (
-                  <div className="mini-ticket onboard-mini-ticket" key={`${b.title}-${i}`} style={{ animationDelay: i * 0.07 + "s" }}>
+                  <div
+                    className="mini-ticket onboard-mini-ticket"
+                    key={`${b.src}-${b.title}-${i}`}
+                    style={{ animationDelay: i * 0.07 + "s" }}
+                  >
                     <div className="mini-ticket-main">
                       <div className="mini-cat" style={{ color: b.color }}>
                         {b.cat}
@@ -187,6 +206,7 @@ function Onboarding() {
           </div>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }

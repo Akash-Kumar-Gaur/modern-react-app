@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { BenefitDetail } from "../components/BenefitDetail";
+import { SiteFooter } from "../components/SiteFooter";
 import {
   buildDashboardBenefits,
   estimateProductValue,
@@ -170,7 +171,7 @@ function Dashboard() {
       <div className="dash-page">
         <header className={"dash-topbar" + (topbarScrolled ? " scrolled" : "")}>
           <Link to="/" className="dash-logo">
-            <span className="logo-mark">◈</span> Benefit Radar
+            <span className="logo-mark">◈</span> Rewards Radar
           </Link>
         </header>
         <div className="dash-empty">
@@ -184,6 +185,7 @@ function Dashboard() {
             Add my products
           </button>
         </div>
+        <SiteFooter />
       </div>
     );
   }
@@ -192,7 +194,7 @@ function Dashboard() {
     <div className="dash-page">
       <header className={"dash-topbar" + (topbarScrolled ? " scrolled" : "")}>
         <Link to="/" className="dash-logo">
-          <span className="logo-mark">◈</span> Benefit Radar
+          <span className="logo-mark">◈</span> Rewards Radar
         </Link>
 
         <div className="dash-tabs-wrap">
@@ -285,6 +287,7 @@ function Dashboard() {
         onMarkUsed={() => detailBenefit && markUsed(detailBenefit)}
         onUndo={() => detailBenefit && undoUsed(detailBenefit)}
       />
+      <SiteFooter />
     </div>
   );
 }

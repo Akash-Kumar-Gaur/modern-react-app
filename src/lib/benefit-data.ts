@@ -41,9 +41,9 @@ export type DashboardBenefit = Benefit & {
 };
 
 export const STORAGE_KEYS = {
-  selectedProducts: "br-selected-products",
-  benefitUsage: "br-benefit-usage",
-  loaded: "br-loaded",
+  selectedProducts: "rr-selected-products",
+  benefitUsage: "rr-benefit-usage",
+  loaded: "rr-loaded",
 } as const;
 
 export const demoData: Record<ProductCategory, Product[]> = {

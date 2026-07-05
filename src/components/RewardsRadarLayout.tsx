@@ -2,11 +2,11 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { STORAGE_KEYS } from "../lib/benefit-data";
 
-type BenefitRadarLayoutProps = {
+type RewardsRadarLayoutProps = {
   children: ReactNode;
 };
 
-export function BenefitRadarLayout({ children }: BenefitRadarLayoutProps) {
+export function RewardsRadarLayout({ children }: RewardsRadarLayoutProps) {
   const loaderRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const [showLoader, setShowLoader] = useState(() => {
@@ -50,7 +50,7 @@ export function BenefitRadarLayout({ children }: BenefitRadarLayoutProps) {
           <div className="loader-ticket">
             <div className="loader-shine" />
           </div>
-          <div className="loader-text">Benefit Radar</div>
+          <div className="loader-text">Rewards Radar</div>
         </div>
       )}
       <div id="cursor-glow" ref={glowRef} />

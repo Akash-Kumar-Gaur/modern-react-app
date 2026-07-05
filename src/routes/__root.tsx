@@ -81,9 +81,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Rewards Radar — Claim what you already paid for" },
       { name: "description", content: "Surface unused benefits bundled into the credit cards, recharge plans, and insurance policies you already hold. No bank login required." },
       { property: "og:title", content: "Rewards Radar — Claim what you already paid for" },
-      { property: "og:description", content: "Surface unused benefits bundled into the cards, plans, and policies you already hold." },
+      { property: "og:description", content: "Surface unused benefits bundled into the credit cards, recharge plans, and insurance policies you already hold. No bank login required." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Rewards Radar — Claim what you already paid for" },
+      { name: "twitter:description", content: "Surface unused benefits bundled into the credit cards, recharge plans, and insurance policies you already hold. No bank login required." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/00b82da6-386f-4a29-971c-2fc11d9b0fef" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/00b82da6-386f-4a29-971c-2fc11d9b0fef" },
     ],
     links: [
       {

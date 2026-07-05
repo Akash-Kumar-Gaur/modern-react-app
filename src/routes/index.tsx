@@ -256,52 +256,92 @@ function Index() {
     const track = document.getElementById("heroSlotTrack");
     if (!track) return;
 
-    const items = Array.from(track.querySelectorAll(".hero-slot-item")) as HTMLElement[];
+    const items = Array.from(
+      track.querySelectorAll(".hero-slot-item"),
+    ) as HTMLElement[];
+
+    if (items.length === 0) return;
+
     let current = 0;
-    let interval: ReturnType<typeof setInterval> | undefined;
+    let isAnimating = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    function flipTo(next: number) {
-      const outgoing = items[current];
-      const incoming = items[next];
-
-      gsap.to(outgoing, {
-        rotateX: -88,
-        y: "-60%",
+    // Step 1: Hard-reset ALL items to hidden state first
+    // using gsap.set (synchronous, no race conditions)
+    items.forEach((item) => {
+      gsap.set(item, {
+        rotateX: 90,
+        y: "60%",
         opacity: 0,
-        duration: 0.38,
-        ease: "power2.in",
-        onComplete: () => {
-          gsap.set(outgoing, { rotateX: 88, y: "60%", opacity: 0 });
-        },
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
       });
-
-      gsap.fromTo(
-        incoming,
-        { rotateX: 88, y: "60%", opacity: 0 },
-        { rotateX: 0, y: "0%", opacity: 1, duration: 0.42, ease: "power2.out", delay: 0.22 },
-      );
-
-      current = next;
-    }
-
-    items.forEach((item, i) => {
-      if (i === 0) {
-        gsap.set(item, { rotateX: 0, y: "0%", opacity: 1 });
-      } else {
-        gsap.set(item, { rotateX: 88, y: "60%", opacity: 0 });
-      }
     });
 
-    const startTimeout = setTimeout(() => {
-      interval = setInterval(() => {
+    // Step 2: Show only the first item
+    gsap.set(items[0], { rotateX: 0, y: "0%", opacity: 1 });
+
+    function flipTo(nextIndex: number) {
+      // Guard: skip if already animating or same item
+      if (isAnimating || nextIndex === current) return;
+      isAnimating = true;
+
+      const outgoing = items[current];
+      const incoming = items[nextIndex];
+
+      // Kill any existing tweens on these elements to prevent overlap
+      gsap.killTweensOf(outgoing);
+      gsap.killTweensOf(incoming);
+
+      // Make sure incoming starts in the correct hidden position
+      gsap.set(incoming, { rotateX: 90, y: "60%", opacity: 0 });
+
+      // Animate outgoing out
+      gsap.to(outgoing, {
+        rotateX: -90,
+        y: "-60%",
+        opacity: 0,
+        duration: 0.35,
+        ease: "power2.in",
+        onComplete: () => {
+          // Reset outgoing to bottom-hidden state after it leaves
+          gsap.set(outgoing, { rotateX: 90, y: "60%", opacity: 0 });
+
+          // Animate incoming in
+          gsap.to(incoming, {
+            rotateX: 0,
+            y: "0%",
+            opacity: 1,
+            duration: 0.38,
+            ease: "power2.out",
+            onComplete: () => {
+              current = nextIndex;
+              isAnimating = false;
+            },
+          });
+        },
+      });
+    }
+
+    // Step 3: Start interval AFTER a delay to let hero intro finish
+    // and after first paint is stable
+    timeoutId = setTimeout(() => {
+      intervalId = setInterval(() => {
+        // Skip tick if previous animation hasn't finished
+        if (isAnimating) return;
         const next = (current + 1) % items.length;
         flipTo(next);
-      }, 2200);
-    }, 1400);
+      }, 2400);
+    }, 1800);
 
+    // Cleanup: kill everything on unmount
     return () => {
-      clearTimeout(startTimeout);
-      if (interval !== undefined) clearInterval(interval);
+      if (intervalId) clearInterval(intervalId);
+      if (timeoutId) clearTimeout(timeoutId);
+      items.forEach((item) => gsap.killTweensOf(item));
     };
   }, []);
 

@@ -1,23 +1,19 @@
 import {
-  getRewardSuggestions,
-  type AmountRangeId as ProductAmountRangeId,
-  type RewardSuggestion,
-} from "../data/products";
+  amountPills,
+  categoryPills,
+  getAllRewards as getAllRewardsFromTable,
+  getAmountMidpoint,
+  getRewards as getRewardsFromTable,
+  payerPills,
+  txTypePills,
+  type AmountRangeId,
+  type Audience,
+  type PaymentType,
+  type RewardResult,
+  type TxType,
+} from '../utils/rewardSuggester';
 
-export type TxType =
-  | "offline"
-  | "online"
-  | "fuel"
-  | "travel"
-  | "dining"
-  | "pharmacy"
-  | "hospital";
-
-export type Audience = "personal" | "business";
-
-export type AmountRangeId = ProductAmountRangeId;
-
-export type PaymentType = "Credit Card" | "Debit Card" | "UPI";
+export type { AmountRangeId, Audience, PaymentType, TxType };
 
 export type RewardEntry = {
   name: string;
@@ -26,12 +22,13 @@ export type RewardEntry = {
   ratePercent: number;
   howTo: string;
   brandColor: string;
-  network: "Visa" | "Mastercard" | "Rupay";
+  network: 'Visa' | 'Mastercard' | 'Rupay';
 };
 
 export type RankedReward = RewardEntry & {
   rank: number;
   estimatedReward: number;
+  estimatedRewardLabel: string;
 };
 
 export type RewardSearch = {
@@ -42,90 +39,71 @@ export type RewardSearch = {
   savedAt: string;
 };
 
-export const STORAGE_KEY_REWARD_SEARCHES = "br-reward-searches";
+export const STORAGE_KEY_REWARD_SEARCHES = 'br-reward-searches';
 
-export const TX_TYPE_OPTIONS: { id: TxType; label: string }[] = [
-  { id: "offline", label: "🏪 Offline" },
-  { id: "online", label: "🌐 Online" },
-  { id: "fuel", label: "⛽ Fuel" },
-  { id: "travel", label: "✈️ Travel" },
-  { id: "dining", label: "🍽️ Dining" },
-  { id: "pharmacy", label: "💊 Pharmacy" },
-  { id: "hospital", label: "🏥 Hospital" },
-];
+export const TX_TYPE_OPTIONS = txTypePills.map((pill) => ({
+  id: pill.value,
+  label: pill.label,
+}));
 
-export const CATEGORY_OPTIONS: Record<TxType, { id: string; label: string }[]> = {
-  offline: [
-    { id: "grocery", label: "Grocery" },
-    { id: "gold-jewellery", label: "Gold/Jewellery" },
-    { id: "electronics", label: "Electronics" },
-    { id: "clothing", label: "Clothing" },
-    { id: "general", label: "General" },
-  ],
-  online: [
-    { id: "amazon", label: "Amazon" },
-    { id: "flipkart", label: "Flipkart" },
-    { id: "swiggy-zomato", label: "Swiggy/Zomato" },
-    { id: "travel-booking", label: "Travel booking" },
-    { id: "subscription", label: "Subscription" },
-    { id: "general-ecommerce", label: "General ecommerce" },
-  ],
-  fuel: [
-    { id: "petrol", label: "Petrol" },
-    { id: "diesel", label: "Diesel" },
-    { id: "cng", label: "CNG" },
-    { id: "ev-charging", label: "EV Charging" },
-  ],
-  travel: [
-    { id: "flights", label: "Flights" },
-    { id: "hotels", label: "Hotels" },
-    { id: "international", label: "International" },
-    { id: "train-bus", label: "Train/Bus" },
-  ],
-  dining: [
-    { id: "restaurant", label: "Restaurant" },
-    { id: "cafe", label: "Cafe" },
-    { id: "food-delivery", label: "Food delivery" },
-  ],
-  pharmacy: [
-    { id: "medicine", label: "Medicine" },
-    { id: "health-products", label: "Health products" },
-  ],
-  hospital: [
-    { id: "opd", label: "OPD" },
-    { id: "surgery", label: "Surgery/Hospitalization" },
-    { id: "diagnostic", label: "Diagnostic lab" },
-  ],
+export const CATEGORY_OPTIONS = Object.fromEntries(
+  Object.entries(categoryPills).map(([tx, pills]) => [
+    tx,
+    pills.map((pill) => ({ id: pill.value, label: pill.label })),
+  ]),
+) as Record<TxType, { id: string; label: string }[]>;
+
+export const AMOUNT_RANGE_OPTIONS = amountPills.map((pill) => ({
+  id: pill.value,
+  label: pill.label,
+  midpoint: getAmountMidpoint(pill.value),
+}));
+
+export const PAYER_OPTIONS = payerPills.map((pill) => ({
+  id: pill.value,
+  label: pill.label,
+}));
+
+const ISSUER_BRAND_COLORS: Record<string, string> = {
+  'HDFC Bank': '#004C8F',
+  'Axis Bank': '#971237',
+  'SBI Card': '#22409A',
+  'ICICI Bank': '#F58220',
+  'IDFC FIRST Bank': '#9B2335',
+  'RBL Bank': '#2E3192',
+  'American Express': '#006FCF',
+  Google: '#4285F4',
+  PhonePe: '#5F259F',
+  NPCI: '#097939',
 };
 
-export const AMOUNT_RANGE_OPTIONS: { id: AmountRangeId; label: string; midpoint: number }[] = [
-  { id: "under-500", label: "Under ₹500", midpoint: 300 },
-  { id: "500-2000", label: "₹500–2,000", midpoint: 1250 },
-  { id: "2000-10000", label: "₹2,000–10,000", midpoint: 6000 },
-  { id: "10000-50000", label: "₹10,000–50,000", midpoint: 30000 },
-  { id: "50000-plus", label: "₹50,000+", midpoint: 75000 },
-];
+function parseEstimatedRewardNumber(label: string): number {
+  if (label === 'Varies') return 0;
+  const kMatch = label.match(/₹([\d.]+)K/i);
+  if (kMatch) return Math.round(parseFloat(kMatch[1]) * 1000);
+  const nMatch = label.match(/₹([\d,]+)/);
+  if (nMatch) return parseInt(nMatch[1].replace(/,/g, ''), 10);
+  return 0;
+}
 
-function toRankedReward(s: RewardSuggestion): RankedReward {
-  const network = (["Visa", "Mastercard", "Rupay"].includes(s.network)
-    ? s.network
-    : "Visa") as RankedReward["network"];
+function toRankedReward(r: RewardResult): RankedReward {
+  const rateMatch = r.rewardRate.match(/(\d+(?:\.\d+)?)/);
+  const ratePercent = rateMatch ? parseFloat(rateMatch[1]) : 0;
   return {
-    rank: s.rank,
-    name: s.name,
-    paymentType: s.paymentType,
-    rate: s.rate,
-    ratePercent: s.ratePercent,
-    howTo: s.howTo,
-    brandColor: s.brandColor,
-    network,
-    estimatedReward: s.estimatedReward,
+    rank: r.rank,
+    name: r.cardName,
+    paymentType: r.paymentType,
+    rate: r.rewardRate,
+    ratePercent,
+    howTo: r.howToGet,
+    brandColor: ISSUER_BRAND_COLORS[r.issuer] ?? '#6B7280',
+    network: 'Visa',
+    estimatedReward: parseEstimatedRewardNumber(r.estimatedReward),
+    estimatedRewardLabel: r.estimatedReward,
   };
 }
 
-export function getAmountMidpoint(amountRange: AmountRangeId): number {
-  return AMOUNT_RANGE_OPTIONS.find((r) => r.id === amountRange)?.midpoint ?? 6000;
-}
+export { getAmountMidpoint };
 
 export function estimateReward(amount: number, ratePercent: number): number {
   return Math.round((amount * ratePercent) / 100);
@@ -137,22 +115,22 @@ export function getRewards(
   amountRange: AmountRangeId,
   options?: { audience?: Audience; limit?: number },
 ): RankedReward[] {
-  const audience = options?.audience ?? "personal";
+  const audience = options?.audience ?? 'personal';
   const limit = options?.limit ?? 3;
-  return getRewardSuggestions(txType, category, amountRange, audience, limit).map(toRankedReward);
+  return getRewardsFromTable(txType, category, amountRange, audience, limit).map(toRankedReward);
 }
 
 export function getAllRewards(
   txType: TxType,
   category: string,
   amountRange: AmountRangeId,
-  audience: Audience = "personal",
+  audience: Audience = 'personal',
 ): RankedReward[] {
-  return getRewards(txType, category, amountRange, { audience, limit: 99 });
+  return getAllRewardsFromTable(txType, category, amountRange, audience).map(toRankedReward);
 }
 
-export function saveRewardSearch(search: Omit<RewardSearch, "savedAt">): void {
-  if (typeof window === "undefined") return;
+export function saveRewardSearch(search: Omit<RewardSearch, 'savedAt'>): void {
+  if (typeof window === 'undefined') return;
   const entry: RewardSearch = { ...search, savedAt: new Date().toISOString() };
   try {
     const raw = localStorage.getItem(STORAGE_KEY_REWARD_SEARCHES);
@@ -164,4 +142,6 @@ export function saveRewardSearch(search: Omit<RewardSearch, "savedAt">): void {
   }
 }
 
-export const RANK_LABELS = ["①", "②", "③", "④", "⑤"] as const;
+export const RANK_LABELS = ['①', '②', '③', '④', '⑤'] as const;
+
+export { EMPTY_COMBO_MESSAGE } from '../utils/rewardSuggester';

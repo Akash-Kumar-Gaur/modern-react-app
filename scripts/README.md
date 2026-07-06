@@ -30,4 +30,11 @@ conditions: '' for cards you personally hold.
 
 ## Adding more cards
 Add entries to the SOURCES array at the top of the script.
-Each entry needs: id, name, issuer, network, annualFee, urls[]
+Each entry needs: id, name, issuer, network, annualFee, urls[], fallbackUrls[] (optional)
+
+If the primary URL returns empty or fewer than 500 characters of text,
+the script tries each fallback URL in order. Network errors are retried
+once after 2 seconds (HTTP 403/429 are not retried).
+
+After each run, a summary report shows per-card fetch status, character
+count, and parsed benefit count — use it to spot cards needing manual entry.

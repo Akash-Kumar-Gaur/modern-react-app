@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { SiteFooter } from "../components/SiteFooter";
 import {
   AMOUNT_RANGE_OPTIONS,
   CATEGORY_OPTIONS,
+  EMPTY_COMBO_MESSAGE,
   getAllRewards,
   getRewards,
+  PAYER_OPTIONS,
   RANK_LABELS,
   saveRewardSearch,
   TX_TYPE_OPTIONS,
@@ -19,10 +21,7 @@ export const Route = createFileRoute("/rewards-suggester")({
   component: RewardsSuggesterPage,
 });
 
-const AUDIENCE_OPTIONS: { id: Audience; label: string }[] = [
-  { id: "personal", label: "Personal" },
-  { id: "business", label: "Business" },
-];
+const AUDIENCE_OPTIONS = PAYER_OPTIONS;
 
 function RewardsSuggesterPage() {
   const [audience, setAudience] = useState<Audience | null>(null);
@@ -39,15 +38,23 @@ function RewardsSuggesterPage() {
   const categories = txType ? CATEGORY_OPTIONS[txType] : [];
   const completedSteps = [audience, txType, category, amountRange].filter(Boolean).length;
   const progressPct = (completedSteps / 4) * 100;
-  const showResults = Boolean(audience && txType && category && amountRange);
+  const allStepsComplete = Boolean(audience && txType && category && amountRange);
 
-  const topResults = showResults
-    ? getRewards(txType!, category!, amountRange!, { audience: audience!, limit: 5 })
-    : [];
+  const topResults = useMemo(
+    () =>
+      audience && txType && category && amountRange
+        ? getRewards(txType, category, amountRange, { audience, limit: 5 })
+        : [],
+    [audience, txType, category, amountRange],
+  );
 
-  const allResults = showResults
-    ? getAllRewards(txType!, category!, amountRange!, audience!)
-    : [];
+  const allResults = useMemo(
+    () =>
+      audience && txType && category && amountRange
+        ? getAllRewards(txType, category, amountRange, audience)
+        : [],
+    [audience, txType, category, amountRange],
+  );
 
   const animatePill = useCallback((el: HTMLElement | null) => {
     if (!el) return;
@@ -101,13 +108,13 @@ function RewardsSuggesterPage() {
   };
 
   useEffect(() => {
-    if (!showResults || !resultsRef.current) return;
+    if (!allStepsComplete || !resultsRef.current) return;
     gsap.fromTo(
       resultsRef.current,
       { opacity: 0, y: 12 },
       { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" },
     );
-  }, [showResults, audience, txType, category, amountRange]);
+  }, [allStepsComplete, topResults.length, audience, txType, category, amountRange]);
 
   return (
     <>
@@ -242,7 +249,19 @@ function RewardsSuggesterPage() {
             )}
           </div>
 
-          {showResults && (
+          {!allStepsComplete && (
+            <p className="sug-page-sub" style={{ marginTop: 24, textAlign: "center" }}>
+              Select all options above to see recommendations.
+            </p>
+          )}
+
+          {allStepsComplete && topResults.length === 0 && (
+            <p className="sug-page-sub" style={{ marginTop: 24, textAlign: "center" }}>
+              {EMPTY_COMBO_MESSAGE}
+            </p>
+          )}
+
+          {allStepsComplete && topResults.length > 0 && (
             <div className="sug-results sug-page-results" ref={resultsRef}>
               <div className="sug-results-head">
                 Top {topResults.length} recommendations
@@ -265,7 +284,7 @@ function RewardsSuggesterPage() {
                       </div>
                       <div className="sug-result-name">{r.name}</div>
                       <div className="sug-reward-rate">{r.rate}</div>
-                      <div className="sug-reward-est">≈ ₹{r.estimatedReward.toLocaleString("en-IN")} back</div>
+                      <div className="sug-reward-est">{r.estimatedRewardLabel}</div>
                       <div className="sug-result-how">{r.howTo}</div>
                     </div>
                   </div>
@@ -302,7 +321,7 @@ function RewardsSuggesterPage() {
                           <td>{r.name}</td>
                           <td>{r.paymentType}</td>
                           <td className="sug-mono">{r.rate}</td>
-                          <td className="sug-mono sug-teal">≈ ₹{r.estimatedReward.toLocaleString("en-IN")}</td>
+                          <td className="sug-mono sug-teal">{r.estimatedRewardLabel}</td>
                           <td>
                             <span className="sug-table-action">Use this</span>
                           </td>

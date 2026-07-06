@@ -12,32 +12,279 @@ const CACHE_DIR = join(__dirname, '../scripts/.cache');
 // ─────────────────────────────────────────────
 const SOURCES = [
   // HDFC
-  { id: 'hdfc-regalia',       name: 'HDFC Regalia Credit Card',        issuer: 'HDFC Bank',          network: 'Visa',       annualFee: 2500, urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia'] },
-  { id: 'hdfc-regalia-gold',  name: 'HDFC Regalia Gold Credit Card',   issuer: 'HDFC Bank',          network: 'Visa',       annualFee: 2500, urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia-gold-credit-card'] },
-  { id: 'hdfc-diners-black',  name: 'HDFC Diners Black Credit Card',   issuer: 'HDFC Bank',          network: 'Diners',     annualFee: 10000, urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/diners-black-credit-card'] },
-  { id: 'hdfc-millennia',     name: 'HDFC Millennia Credit Card',      issuer: 'HDFC Bank',          network: 'Mastercard', annualFee: 1000, urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/millennia-credit-card'] },
-  { id: 'hdfc-moneyback-plus',name: 'HDFC MoneyBack+ Credit Card',     issuer: 'HDFC Bank',          network: 'Mastercard', annualFee: 500,  urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/moneyback-plus-credit-card'] },
+  {
+    id: 'hdfc-regalia',
+    name: 'HDFC Regalia Credit Card',
+    issuer: 'HDFC Bank',
+    network: 'Visa',
+    annualFee: 2500,
+    urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'hdfc-regalia-gold',
+    name: 'HDFC Regalia Gold Credit Card',
+    issuer: 'HDFC Bank',
+    network: 'Visa',
+    annualFee: 2500,
+    urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia-gold-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'hdfc-diners-black',
+    name: 'HDFC Diners Black Credit Card',
+    issuer: 'HDFC Bank',
+    network: 'Diners',
+    annualFee: 10000,
+    urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/diners-black-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'hdfc-millennia',
+    name: 'HDFC Millennia Credit Card',
+    issuer: 'HDFC Bank',
+    network: 'Mastercard',
+    annualFee: 1000,
+    urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/millennia-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'hdfc-moneyback-plus',
+    name: 'HDFC MoneyBack+ Credit Card',
+    issuer: 'HDFC Bank',
+    network: 'Mastercard',
+    annualFee: 500,
+    urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/moneyback-plus-credit-card'],
+    fallbackUrls: ['https://v.hdfcbank.com/htdocs/common/credit-cards/cc_moneyback.html'],
+  },
+  {
+    id: 'hdfc-tata-neu-plus',
+    name: 'HDFC Tata Neu Plus Credit Card',
+    issuer: 'HDFC Bank',
+    network: 'Rupay',
+    annualFee: 499,
+    urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/tata-neu-plus-hdfc-bank-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'hdfc-infinia',
+    name: 'HDFC Infinia Credit Card',
+    issuer: 'HDFC Bank',
+    network: 'Visa',
+    annualFee: 12500,
+    urls: ['https://www.hdfcbank.com/personal/pay/cards/credit-cards/infinia-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'hdfc-millennia-debit',
+    name: 'HDFC Millennia Debit Card',
+    issuer: 'HDFC Bank',
+    network: 'Mastercard',
+    annualFee: 0,
+    type: 'debit-card',
+    urls: ['https://www.hdfcbank.com/personal/pay/cards/debit-cards/millennia-debit-card'],
+    fallbackUrls: [],
+  },
   // SBI
-  { id: 'sbi-elite',          name: 'SBI Card ELITE',                  issuer: 'SBI Card',           network: 'Mastercard', annualFee: 4999, urls: ['https://www.sbicard.com/en/personal/credit-cards/travel/sbi-card-elite.page'] },
-  { id: 'sbi-simply-click',   name: 'SBI SimplyCLICK Credit Card',     issuer: 'SBI Card',           network: 'Visa',       annualFee: 499,  urls: ['https://www.sbicard.com/en/personal/credit-cards/rewards/simplyclick-sbi-card.page'] },
-  { id: 'sbi-bpcl',           name: 'BPCL SBI Credit Card',            issuer: 'SBI Card',           network: 'Visa',       annualFee: 499,  urls: ['https://www.sbicard.com/en/personal/credit-cards/fuel/bpcl-sbi-card.page'] },
-  { id: 'sbi-cashback',       name: 'SBI Cashback Credit Card',        issuer: 'SBI Card',           network: 'Visa',       annualFee: 999,  urls: ['https://www.sbicard.com/en/personal/credit-cards/cashback/cashback-sbi-card.page'] },
+  {
+    id: 'sbi-elite',
+    name: 'SBI Card ELITE',
+    issuer: 'SBI Card',
+    network: 'Mastercard',
+    annualFee: 4999,
+    urls: ['https://www.sbicard.com/en/personal/credit-cards/travel/sbi-card-elite.page'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'sbi-simply-click',
+    name: 'SBI SimplyCLICK Credit Card',
+    issuer: 'SBI Card',
+    network: 'Visa',
+    annualFee: 499,
+    urls: ['https://www.sbicard.com/en/personal/credit-cards/rewards/simplyclick-sbi-card.page'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'sbi-bpcl',
+    name: 'BPCL SBI Credit Card',
+    issuer: 'SBI Card',
+    network: 'Visa',
+    annualFee: 499,
+    urls: ['https://www.sbicard.com/en/personal/credit-cards/fuel/bpcl-sbi-card.page'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'sbi-cashback',
+    name: 'SBI Cashback Credit Card',
+    issuer: 'SBI Card',
+    network: 'Visa',
+    annualFee: 999,
+    urls: ['https://www.sbicard.com/en/personal/credit-cards/cashback/cashback-sbi-card.page'],
+    fallbackUrls: ['https://www.sbicard.com/sbi-card-en/assets/docs/pdf/cashback-mitc.pdf'],
+  },
+  {
+    id: 'sbi-gold-debit',
+    name: 'SBI Gold Debit Card',
+    issuer: 'SBI',
+    network: 'Mastercard',
+    annualFee: 0,
+    type: 'debit-card',
+    urls: ['https://www.onlinesbi.sbi/sbicollect/icollecthome.htm'],
+    fallbackUrls: ['https://www.sbi.co.in/web/personal-banking/accounts/debit-card'],
+  },
   // Axis
-  { id: 'axis-magnus',        name: 'Axis Magnus Credit Card',         issuer: 'Axis Bank',          network: 'Visa',       annualFee: 12500, urls: ['https://www.axisbank.com/retail/cards/credit-card/magnus-credit-card'] },
-  { id: 'axis-ace',           name: 'Axis Ace Credit Card',            issuer: 'Axis Bank',          network: 'Visa',       annualFee: 499,  urls: ['https://www.axisbank.com/retail/cards/credit-card/ace-credit-card'] },
-  { id: 'axis-flipkart',      name: 'Axis Flipkart Credit Card',       issuer: 'Axis Bank',          network: 'Visa',       annualFee: 500,  urls: ['https://www.axisbank.com/retail/cards/credit-card/flipkart-axis-bank-credit-card'] },
-  { id: 'axis-vistara-infin', name: 'Axis Vistara Infinite Credit Card',issuer: 'Axis Bank',         network: 'Visa',       annualFee: 10000, urls: ['https://www.axisbank.com/retail/cards/credit-card/vistara-infinite-credit-card'] },
+  {
+    id: 'axis-magnus',
+    name: 'Axis Magnus Credit Card',
+    issuer: 'Axis Bank',
+    network: 'Visa',
+    annualFee: 12500,
+    urls: ['https://www.axisbank.com/retail/cards/credit-card/magnus-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'axis-ace',
+    name: 'Axis Ace Credit Card',
+    issuer: 'Axis Bank',
+    network: 'Visa',
+    annualFee: 499,
+    urls: ['https://www.axisbank.com/retail/cards/credit-card/ace-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'axis-flipkart',
+    name: 'Axis Flipkart Credit Card',
+    issuer: 'Axis Bank',
+    network: 'Visa',
+    annualFee: 500,
+    urls: ['https://www.axisbank.com/retail/cards/credit-card/flipkart-axis-bank-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'axis-vistara-infin',
+    name: 'Axis Vistara Infinite Credit Card',
+    issuer: 'Axis Bank',
+    network: 'Visa',
+    annualFee: 10000,
+    urls: ['https://www.axisbank.com/retail/cards/credit-card/vistara-infinite-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'axis-vistara',
+    name: 'Axis Vistara Credit Card',
+    issuer: 'Axis Bank',
+    network: 'Visa',
+    annualFee: 1500,
+    urls: ['https://www.axisbank.com/retail/cards/credit-card/vistara-credit-card'],
+    fallbackUrls: [],
+  },
   // ICICI
-  { id: 'icici-amazon-pay',   name: 'Amazon Pay ICICI Credit Card',    issuer: 'ICICI Bank',         network: 'Visa',       annualFee: 0,    urls: ['https://www.icicibank.com/personal-banking/cards/credit-card/amazon-pay-credit-card'] },
-  { id: 'icici-coral',        name: 'ICICI Coral Credit Card',         issuer: 'ICICI Bank',         network: 'Visa',       annualFee: 500,  urls: ['https://www.icicibank.com/personal-banking/cards/credit-card/coral-credit-card'] },
-  { id: 'icici-sapphiro',     name: 'ICICI Sapphiro Credit Card',      issuer: 'ICICI Bank',         network: 'Visa',       annualFee: 3500, urls: ['https://www.icicibank.com/personal-banking/cards/credit-card/sapphiro-credit-card'] },
+  {
+    id: 'icici-amazon-pay',
+    name: 'Amazon Pay ICICI Credit Card',
+    issuer: 'ICICI Bank',
+    network: 'Visa',
+    annualFee: 0,
+    urls: ['https://www.icicibank.com/personal-banking/cards/credit-card/amazon-pay-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'icici-coral',
+    name: 'ICICI Coral Credit Card',
+    issuer: 'ICICI Bank',
+    network: 'Visa',
+    annualFee: 500,
+    urls: ['https://www.icicibank.com/personal-banking/cards/credit-card/coral-credit-card'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'icici-sapphiro',
+    name: 'ICICI Sapphiro Credit Card',
+    issuer: 'ICICI Bank',
+    network: 'Visa',
+    annualFee: 3500,
+    urls: ['https://www.icicibank.com/personal-banking/cards/credit-card/sapphiro-credit-card'],
+    fallbackUrls: ['https://www.icicibank.com/personal-banking/cards/credit-card/sapphiro-credit-card/features'],
+  },
   // Kotak
-  { id: 'kotak-royale',       name: 'Kotak Royale Signature',          issuer: 'Kotak Bank',         network: 'Visa',       annualFee: 999,  urls: ['https://www.kotak.com/en/personal-banking/cards/credit-cards/royale-signature-credit-card.html'] },
-  { id: 'kotak-811',          name: 'Kotak 811 Dream Different Card',  issuer: 'Kotak Bank',         network: 'Visa',       annualFee: 0,    urls: ['https://www.kotak.com/en/personal-banking/cards/credit-cards/811-dream-different-credit-card.html'] },
+  {
+    id: 'kotak-royale',
+    name: 'Kotak Royale Signature',
+    issuer: 'Kotak Bank',
+    network: 'Visa',
+    annualFee: 999,
+    urls: ['https://www.kotak.com/en/personal-banking/cards/credit-cards/royale-signature-credit-card.html'],
+    fallbackUrls: [],
+  },
+  {
+    id: 'kotak-811',
+    name: 'Kotak 811 Dream Different Card',
+    issuer: 'Kotak Bank',
+    network: 'Visa',
+    annualFee: 0,
+    urls: ['https://www.kotak.com/en/personal-banking/cards/credit-cards/811-dream-different-credit-card.html'],
+    fallbackUrls: [],
+  },
   // Yes Bank
-  { id: 'yes-first-preferred',name: 'YES First Preferred Credit Card', issuer: 'Yes Bank',           network: 'Mastercard', annualFee: 999,  urls: ['https://www.yesbank.in/personal-banking/yes-individual/loans-and-cards/credit-cards/yes-first-preferred-credit-card'] },
+  {
+    id: 'yes-first-preferred',
+    name: 'YES First Preferred Credit Card',
+    issuer: 'Yes Bank',
+    network: 'Mastercard',
+    annualFee: 999,
+    urls: ['https://www.yesbank.in/personal-banking/yes-individual/loans-and-cards/credit-cards/yes-first-preferred-credit-card'],
+    fallbackUrls: ['https://www.yesbank.in/personal-banking/yes-individual/loans-and-cards/credit-cards/yes-first-preferred-credit-card/features-and-benefits'],
+  },
   // IndusInd
-  { id: 'indusind-legend',    name: 'IndusInd Legend Credit Card',     issuer: 'IndusInd Bank',      network: 'Visa',       annualFee: 9999, urls: ['https://www.indusind.com/in/en/personal/cards/credit-cards/legend-credit-card.html'] },
+  {
+    id: 'indusind-legend',
+    name: 'IndusInd Legend Credit Card',
+    issuer: 'IndusInd Bank',
+    network: 'Visa',
+    annualFee: 9999,
+    urls: ['https://www.indusind.com/in/en/personal/cards/credit-cards/legend-credit-card.html'],
+    fallbackUrls: ['https://www.indusind.com/in/en/personal/cards/credit-cards/legend-credit-card/features.html'],
+  },
+  // RBL
+  {
+    id: 'rbl-shoprite',
+    name: 'RBL Shoprite Credit Card',
+    issuer: 'RBL Bank',
+    network: 'Mastercard',
+    annualFee: 500,
+    urls: ['https://www.rblbank.com/personal/cards/credit-cards/shoprite'],
+    fallbackUrls: [],
+  },
+  // Standard Chartered
+  {
+    id: 'standard-chartered-manhattan',
+    name: 'Standard Chartered Manhattan Credit Card',
+    issuer: 'Standard Chartered',
+    network: 'Mastercard',
+    annualFee: 999,
+    urls: ['https://www.sc.com/in/credit-cards/standard-chartered-manhattan-credit-card/'],
+    fallbackUrls: ['https://www.sc.com/in/credit-cards/manhattan/'],
+  },
+  // IDFC
+  {
+    id: 'idfc-wealth',
+    name: 'IDFC FIRST Wealth Credit Card',
+    issuer: 'IDFC FIRST Bank',
+    network: 'Visa',
+    annualFee: 0,
+    urls: ['https://www.idfcfirstbank.com/credit-card/wealth-credit-card'],
+    fallbackUrls: ['https://www.idfcfirstbank.com/credit-card/wealth-credit-card/features'],
+  },
+  // American Express
+  {
+    id: 'amex-gold',
+    name: 'American Express Gold Charge Card',
+    issuer: 'American Express',
+    network: 'Amex',
+    annualFee: 4500,
+    urls: ['https://www.americanexpress.com/in/credit-cards/gold-card/'],
+    fallbackUrls: [],
+  },
 ];
 
 // ─────────────────────────────────────────────
@@ -49,6 +296,40 @@ const HEADERS = {
   'Accept-Language': 'en-IN,en;q=0.9',
   'Cache-Control': 'no-cache',
 };
+
+async function fetchTextLive(url, isRetry = false) {
+  console.log(`  [fetch${isRetry ? ' (retry)' : ''}] ${url}`);
+  try {
+    const res = await fetch(url, {
+      headers: HEADERS,
+      signal: AbortSignal.timeout(18000),
+      redirect: 'follow',
+    });
+    if (!res.ok) {
+      console.warn(`  [warn]  HTTP ${res.status} for ${url}`);
+      return '';
+    }
+    const html = await res.text();
+    const text = stripHtml(html);
+
+    try {
+      const { mkdirSync } = await import('fs');
+      mkdirSync(CACHE_DIR, { recursive: true });
+      const cacheFile = join(CACHE_DIR, Buffer.from(url).toString('base64').slice(0, 80) + '.txt');
+      writeFileSync(cacheFile, text, 'utf8');
+    } catch {}
+
+    return text;
+  } catch (e) {
+    if (!isRetry) {
+      console.warn(`  [warn]  Network error for ${url}: ${e.message} — retrying in 2s`);
+      await new Promise((r) => setTimeout(r, 2000));
+      return fetchTextLive(url, true);
+    }
+    console.warn(`  [warn]  Fetch failed for ${url}: ${e.message}`);
+    return '';
+  }
+}
 
 async function fetchText(url) {
   const cacheFile = join(CACHE_DIR, Buffer.from(url).toString('base64').slice(0, 80) + '.txt');
@@ -63,32 +344,26 @@ async function fetchText(url) {
     }
   }
 
-  console.log(`  [fetch] ${url}`);
-  try {
-    const res = await fetch(url, {
-      headers: HEADERS,
-      signal: AbortSignal.timeout(18000),
-      redirect: 'follow',
-    });
-    if (!res.ok) {
-      console.warn(`  [warn]  HTTP ${res.status} for ${url}`);
-      return '';
+  return fetchTextLive(url);
+}
+
+async function fetchWithFallbacks(urls) {
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i];
+    const text = await fetchText(url);
+    if (text && text.length > 500) {
+      return {
+        text,
+        url,
+        usedFallback: i > 0,
+        charCount: text.length,
+      };
     }
-    const html = await res.text();
-    const text = stripHtml(html);
-
-    // Write to cache
-    try {
-      const { mkdirSync } = await import('fs');
-      mkdirSync(CACHE_DIR, { recursive: true });
-      writeFileSync(cacheFile, text, 'utf8');
-    } catch {}
-
-    return text;
-  } catch (e) {
-    console.warn(`  [warn]  Fetch failed for ${url}: ${e.message}`);
-    return '';
+    if (i < urls.length - 1) {
+      await new Promise((r) => setTimeout(r, 800));
+    }
   }
+  return { text: '', url: null, usedFallback: false, charCount: 0 };
 }
 
 function stripHtml(html) {
@@ -543,25 +818,46 @@ async function main() {
   mkdirSync(CACHE_DIR, { recursive: true });
 
   const results = [];
+  const reports = [];
   let totalBenefits = 0;
 
   for (const card of SOURCES) {
     console.log(`\n📄 ${card.name}`);
 
-    let combinedText = '';
-    for (const url of card.urls) {
-      const text = await fetchText(url);
-      combinedText += ' ' + text;
-    }
+    const allUrls = [...card.urls, ...(card.fallbackUrls || [])];
+    const { text: combinedText, url: fetchedUrl, usedFallback, charCount } =
+      await fetchWithFallbacks(allUrls);
 
     if (!combinedText.trim()) {
       console.log('  ⚠  No content fetched — skipping');
+      reports.push({
+        id: card.id,
+        name: card.name,
+        status: 'failed',
+        charCount: 0,
+        benefitCount: 0,
+        url: null,
+      });
       continue;
     }
 
-    const benefits = parseAllBenefits(combinedText, card);
-    console.log(`  ✓  Found ${benefits.length} benefit(s): ${benefits.map(b => b.category).join(', ')}`);
+    if (usedFallback) {
+      console.log(`  ↪  Used fallback URL: ${fetchedUrl}`);
+    }
+
+    const cardWithSource = { ...card, urls: [fetchedUrl || card.urls[0]] };
+    const benefits = parseAllBenefits(combinedText, cardWithSource);
+    console.log(`  ✓  Found ${benefits.length} benefit(s): ${benefits.map((b) => b.category).join(', ') || 'none'}`);
     totalBenefits += benefits.length;
+
+    reports.push({
+      id: card.id,
+      name: card.name,
+      status: usedFallback ? 'fallback' : 'success',
+      charCount,
+      benefitCount: benefits.length,
+      url: fetchedUrl,
+    });
 
     // Estimate annual value from benefits
     const annualValueEstimate = benefits.reduce((sum, b) => {
@@ -574,7 +870,7 @@ async function main() {
 
     results.push({
       id: card.id,
-      type: 'credit-card',
+      type: card.type || 'credit-card',
       issuer: card.issuer,
       name: card.name,
       network: card.network,
@@ -583,8 +879,8 @@ async function main() {
       benefits,
     });
 
-    // Polite delay between requests
-    await new Promise(r => setTimeout(r, 1200));
+    // Polite delay between cards
+    await new Promise((r) => setTimeout(r, 1200));
   }
 
   // Write output
@@ -594,6 +890,29 @@ async function main() {
   console.log('\n─'.repeat(50));
   console.log(`✅ Done. ${results.length} cards, ${totalBenefits} benefits written to src/data/products.ts`);
   console.log(`📁 Page cache saved in scripts/.cache/ (reused for 24h)`);
+
+  console.log('\n📊 Fetch Summary');
+  console.log('─'.repeat(70));
+  for (const r of reports) {
+    if (r.status === 'success') {
+      console.log(`✅ ${r.name}: ${r.charCount.toLocaleString()} chars, ${r.benefitCount} benefit(s) parsed`);
+    } else if (r.status === 'fallback') {
+      console.log(
+        `⚠️  ${r.name}: used fallback (${r.url}), ${r.charCount.toLocaleString()} chars, ${r.benefitCount} benefit(s) parsed`,
+      );
+    } else {
+      console.log(`❌ ${r.name}: failed (all URLs returned empty or < 500 chars)`);
+    }
+  }
+
+  const failed = reports.filter((r) => r.status === 'failed');
+  const zeroBenefits = reports.filter((r) => r.status !== 'failed' && r.benefitCount === 0);
+  if (failed.length > 0 || zeroBenefits.length > 0) {
+    console.log('\n⚠  Cards needing manual data entry:');
+    for (const r of failed) console.log(`   • ${r.id} — fetch failed`);
+    for (const r of zeroBenefits) console.log(`   • ${r.id} — fetched but 0 benefits parsed`);
+  }
+
   console.log('\n⚠  Review the output before committing — parser catches most');
   console.log('   standard patterns but edge cases need manual review.');
 }

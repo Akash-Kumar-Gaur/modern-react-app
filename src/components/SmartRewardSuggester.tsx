@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import {
   AMOUNT_RANGE_OPTIONS,
   CATEGORY_OPTIONS,
+  EMPTY_COMBO_MESSAGE,
   getRewards,
   RANK_LABELS,
   TX_TYPE_OPTIONS,
@@ -22,11 +23,15 @@ export function SmartRewardSuggester() {
   const categories = txType ? CATEGORY_OPTIONS[txType] : [];
   const showStep2 = Boolean(txType);
   const showStep3 = Boolean(txType && category);
-  const showResults = Boolean(txType && category && amountRange);
+  const allStepsComplete = Boolean(txType && category && amountRange);
 
-  const results = showResults
-    ? getRewards(txType!, category!, amountRange!, { limit: 3 })
-    : [];
+  const results = useMemo(
+    () =>
+      txType && category && amountRange
+        ? getRewards(txType, category, amountRange, { limit: 3 })
+        : [],
+    [txType, category, amountRange],
+  );
 
   const animatePill = useCallback((el: HTMLElement | null) => {
     if (!el) return;
@@ -70,13 +75,13 @@ export function SmartRewardSuggester() {
   };
 
   useEffect(() => {
-    if (!showResults || !resultsRef.current) return;
+    if (!allStepsComplete || !resultsRef.current) return;
     gsap.fromTo(
       resultsRef.current,
       { opacity: 0, y: 12 },
       { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" },
     );
-  }, [showResults, txType, category, amountRange]);
+  }, [allStepsComplete, results.length, txType, category, amountRange]);
 
   return (
     <div className="suggester-shell" ref={shellRef} style={{ opacity: resetting ? undefined : 1 }}>
@@ -133,9 +138,21 @@ export function SmartRewardSuggester() {
           </div>
         )}
 
-        {showResults && (
+        {!allStepsComplete && (
+          <p className="sug-result-how" style={{ marginTop: 28 }}>
+            Select all options above to see recommendations.
+          </p>
+        )}
+
+        {allStepsComplete && results.length === 0 && (
+          <p className="sug-result-how" style={{ marginTop: 28 }}>
+            {EMPTY_COMBO_MESSAGE}
+          </p>
+        )}
+
+        {allStepsComplete && results.length > 0 && (
           <div className="sug-results" ref={resultsRef} style={{ marginTop: 32 }}>
-            <div className="sug-results-head">Best payment methods for you</div>
+            <div className="sug-results-head">Top {results.length} recommendations</div>
             <div className="sug-results-list">
               {results.map((r) => (
                 <div key={r.rank} className="sug-result-card">
@@ -144,7 +161,7 @@ export function SmartRewardSuggester() {
                     <div className="sug-result-name">{r.name}</div>
                     <span className="sug-type-pill">{r.paymentType}</span>
                     <div className="sug-reward-rate">{r.rate}</div>
-                    <div className="sug-reward-est">≈ ₹{r.estimatedReward.toLocaleString("en-IN")} back</div>
+                    <div className="sug-reward-est">{r.estimatedRewardLabel}</div>
                     <div className="sug-result-how">{r.howTo}</div>
                   </div>
                 </div>
